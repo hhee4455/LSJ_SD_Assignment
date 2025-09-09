@@ -1,4 +1,5 @@
-from pydantic import Field, BaseSettings
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # 한국투자증권 OpenAPI 설정
