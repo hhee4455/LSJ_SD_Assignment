@@ -2,6 +2,7 @@ from typing import List
 
 from config.settings import settings
 from utils.logging import get_logger
+from utils.data_utils import remove_duplicates
 from src.models.api_models import KISMinuteResponse, KISDailyResponse
 from src.models.domain_models import MinuteData, DailyData
 from src.kis.kis_auth import KISAuthManager
@@ -33,7 +34,7 @@ class StockDataExtractor:
                 return []
             
             # 중복 제거
-            unique_data = self._remove_duplicates(minute_data_list, lambda x: x.timestamp)
+            unique_data = remove_duplicates(minute_data_list, lambda x: x.timestamp)
             
             logger.info(f"분봉 {len(unique_data)}건 추출 완료")
             return unique_data
@@ -58,7 +59,7 @@ class StockDataExtractor:
                 return []
             
             # 중복 제거
-            unique_data = self._remove_duplicates(daily_data_list, lambda x: x.date)
+            unique_data = remove_duplicates(daily_data_list, lambda x: x.date)
             
             logger.info(f"일봉 {len(unique_data)}건 추출 완료")
             return unique_data
@@ -66,16 +67,3 @@ class StockDataExtractor:
         except Exception as e:
             logger.error(f"일봉 추출 실패: {e}")
             raise
-    
-    def _remove_duplicates(self, data_list: List, key_func) -> List:
-        """중복 데이터 제거"""
-        seen = set()
-        unique_data = []
-        
-        for item in data_list:
-            key = key_func(item)
-            if key not in seen:
-                seen.add(key)
-                unique_data.append(item)
-        
-        return unique_data
