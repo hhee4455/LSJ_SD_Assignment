@@ -21,9 +21,15 @@ class KISAPIClient:
         url = f"{self.base_url}{endpoint}"
         response = requests.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
+        
         result = response.json()
-        if result.get("rt_cd") != "0":
-            raise ValueError(f"API 오류: {result.get('msg1')}")
+        rt_cd = result.get("rt_cd", "")
+        
+        # rt_cd가 "0"이거나 빈 문자열이면 성공
+        if rt_cd != "0" and rt_cd != "":
+            error_msg = result.get('msg1') or result.get('msg_cd') or '알 수 없는 API 오류'
+            raise ValueError(f"API 오류: {error_msg}")
+            
         return result
 
     def call_minute_api(self, stock_code: str) -> Dict[str, Any]:
@@ -32,7 +38,7 @@ class KISAPIClient:
         params = {
             "fid_cond_mrkt_div_code": "J",
             "fid_input_iscd": stock_code,
-            "fid_period_div_code": "1",  # 1분봉 고정
+            "fid_period_div_code": "1",
             "fid_org_adj_prc": "0",
         }
         logger.info(f"분봉 API 호출: {stock_code}")
@@ -46,7 +52,7 @@ class KISAPIClient:
             "fid_input_iscd": stock_code,
             "fid_input_date_1": start_date,
             "fid_input_date_2": end_date,
-            "fid_period_div_code": "D",  # 일봉
+            "fid_period_div_code": "D",
             "fid_org_adj_prc": "0",
         }
         logger.info(f"일봉 API 호출: {stock_code}")
