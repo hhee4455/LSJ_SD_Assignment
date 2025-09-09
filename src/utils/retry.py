@@ -18,14 +18,15 @@ def retry_with_delay(exceptions: Tuple[Type[Exception], ...] = (Exception,)) -> 
                     return func(*args, **kwargs)
                 
                 except exceptions as e:
+                    # 마지막 시도인 경우 예외 발생
                     if attempt == settings.RETRY_COUNT:
                         logger.error(f"{func.__name__} 최종 실패 (시도: {attempt + 1}): {e}")
                         raise
                     
-                    logger.warning(f"{func.__name__} 실패 (시도: {attempt + 1}/{settings.RETRY_COUNT + 1}): {e}")
+                    # 재시도 로그 및 대기
+                    logger.warning(f"{func.__name__} 실패 - 재시도 {attempt + 1}/{settings.RETRY_COUNT}: {e}")
                     
                     if settings.RETRY_DELAY > 0:
-                        logger.info(f"{settings.RETRY_DELAY}초 후 재시도...")
                         time.sleep(settings.RETRY_DELAY)
             
         return wrapper
