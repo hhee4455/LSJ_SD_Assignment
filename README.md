@@ -17,17 +17,23 @@ pip install -r requirements.txt
 ## 폴더 구조
 ```
 .
-├── .env                 
+├── .env
+├── .env.example
 ├── .gitignore
-├── app.py                # 진입점
-├── config/
-│   └── config.py
-├── extract/
-│   └── extract.py 
-├── transform/
-│   └── transform.py
-├── load/
-│   └── load.py
+├── app.py
+├── config
+│   └── settings.py
+├── extract
+├── load
+├── models
+├── README.md
 ├── requirements.txt
-└── README.md
+├── shared
+└── transform
 ```
+
+## 고민했던 것들
+
+### 1. 프로젝트 구조 설계
+- 모듈화를 진행하며 가독성 높은 구조가 무엇일까?
+- `extract`, `transform`, `load` 폴더로 나누어 각 단계별로 역할을 분리하는게 가장 가독성이 높다고 판단
