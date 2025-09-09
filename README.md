@@ -23,21 +23,21 @@ pip install -r requirements.txt
 ├── app.py
 ├── config
 │   └── settings.py
-├── models
-│   └── models.py
 ├── README.md
 ├── requirements.txt
-├── shared
-│   ├── datetime_utils.py
-│   ├── logging.py
-│   └── retry.py
-└── src
-    ├── extract
-    │   └── extract.py
-    ├── load
-    │   └── load.py
-    └── transform
-        └── transform.py
+├── src
+│   ├── extract
+│   │   └── extract.py
+│   ├── load
+│   │   └── load.py
+│   ├── models
+│   │   └── models.py
+│   └── transform
+│       └── transform.py
+└── utils
+    ├── datetime_utils.py
+    ├── logging.py
+    └── retry.py
 ```
 
 ## 고민했던 것들
