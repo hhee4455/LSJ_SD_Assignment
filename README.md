@@ -14,6 +14,8 @@ venv\Scripts\activate      # Windows
 pip install -r requirements.txt
 ```
 
+---
+
 ## 폴더 구조
 ```
 .
@@ -24,11 +26,11 @@ pip install -r requirements.txt
 ├── README.md
 ├── requirements.txt
 └── src
-    ├── clients
-    │   ├── kis_auth.py
-    │   └── kis_client.py
     ├── config
     │   └── settings.py
+    ├── kis
+    │   ├── kis_auth.py
+    │   └── kis_client.py
     ├── models
     │   ├── api_models.py
     │   └── domain_models.py
@@ -37,10 +39,22 @@ pip install -r requirements.txt
     │   ├── loader.py
     │   └── transformer.py
     └── utils
+        ├── data_utils.py
         ├── date_utils.py
         ├── logging.py
         └── retry.py
 ```
+
+---
+
+## 프로젝트 구조 설명(임시)
+- `config`: 설정 관련 코드
+- `kis`: 한국투자증권 OpenAPI 클라이언트 및 인증 관리
+- `models`: API 및 도메인 모델 정의
+- `pipelines`: ETL 파이프라인 구성 요소 (추출, 변환, 적재)
+- `utils`: 유틸리티 함수 및 헬퍼 모듈
+
+---
 
 ## 고민했던 것들
 

@@ -17,5 +17,9 @@ venv/
 .vscode/
 .idea/
 
+# Data & Cache
+data/
+logs/
+
 # Mac / Linux
 .DS_Store
