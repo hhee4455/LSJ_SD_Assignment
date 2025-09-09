@@ -20,28 +20,30 @@ pip install -r requirements.txt
 ├── .env
 ├── .env.example
 ├── .gitignore
-├── app.py
-├── config
-│   └── settings.py
+├── main.py
 ├── README.md
 ├── requirements.txt
-├── src
-│   ├── extract
-│   │   └── extract.py
-│   ├── load
-│   │   └── load.py
-│   ├── models
-│   │   └── models.py
-│   └── transform
-│       └── transform.py
-└── utils
-    ├── datetime_utils.py
-    ├── logging.py
-    └── retry.py
+└── src
+    ├── clients
+    │   ├── kis_auth.py
+    │   └── kis_client.py
+    ├── config
+    │   └── settings.py
+    ├── models
+    │   ├── api_models.py
+    │   └── domain_models.py
+    ├── pipelines
+    │   ├── extractor.py
+    │   ├── loader.py
+    │   └── transformer.py
+    └── utils
+        ├── date_utils.py
+        ├── logging.py
+        └── retry.py
 ```
 
 ## 고민했던 것들
 
 ### 1. 프로젝트 구조 설계
 - 모듈화를 진행하며 가독성 높은 구조가 무엇일까?
-- `extract`, `transform`, `load` 폴더로 나누어 각 단계별로 역할을 분리하는게 가장 가독성이 높다고 판단
+- `clients`, `models`, `pipelines`, `utils`로 역할에 따라 폴더를 나누어 관리

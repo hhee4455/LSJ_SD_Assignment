@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Optional
 from pydantic import BaseModel, Field
-from utils.datetime_utils import get_current_timestamp
+from src.utils.date_utils import get_current_timestamp
 
 
 class StockData(BaseModel):
