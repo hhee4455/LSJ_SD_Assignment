@@ -4,7 +4,7 @@ from typing import Dict, Any
 from config.settings import settings
 from utils.logging import get_logger
 from utils.retry import retry_with_delay
-from .kis_auth import KISAuthManager
+from kis_auth import KISAuthManager
 
 logger = get_logger(__name__)
 

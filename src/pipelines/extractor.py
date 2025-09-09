@@ -4,8 +4,8 @@ from config.settings import settings
 from utils.logging import get_logger
 from src.models.api_models import KISMinuteResponse, KISDailyResponse
 from src.models.domain_models import MinuteData, DailyData
-from clients.kis_auth import KISAuthManager
-from clients.kis_client import KISAPIClient
+from kis.kis_auth import KISAuthManager
+from kis.kis_client import KISAPIClient
 
 logger = get_logger(__name__)
 
