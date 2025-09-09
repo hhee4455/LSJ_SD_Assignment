@@ -1,5 +1,4 @@
 from pydantic import Field, BaseSettings
-from typing import Optional
 
 class Settings(BaseSettings):
     # 한국투자증권 OpenAPI 설정
@@ -8,15 +7,15 @@ class Settings(BaseSettings):
     KIS_BASE_URL: str = Field(default="https://openapi.koreainvestment.com:9443")
     
     # AWS DynamoDB 설정
-    AWS_REGION: str = Field(default="ap-northeast-2", env="AWS_REGION")
-    AWS_ACCESS_KEY_ID: Optional[str] = Field(default=None, env="AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY: Optional[str] = Field(default=None, env="AWS_SECRET_ACCESS_KEY")
-    DYNAMODB_TABLE_NAME: str = Field(default="samsung_stock_data", env="DYNAMODB_TABLE_NAME")
+    AWS_REGION: str = Field(default="ap-northeast-2")
+    AWS_ACCESS_KEY_ID: str = Field(..., env="AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY: str = Field(..., env="AWS_SECRET_ACCESS_KEY")
+    DYNAMODB_TABLE_NAME: str = Field(default="samsung_stock_data")
     
     # 데이터 수집 설정
-    STOCK_CODE: str = Field(default="005930")  # 삼성전자
+    STOCK_CODE: str = Field(default="005930")
     RETRY_COUNT: int = Field(default=3)
-    RETRY_DELAY: int = Field(default=1)  # seconds
+    RETRY_DELAY: int = Field(default=1)
     
     # 로깅 설정
     LOG_LEVEL: str = Field(default="INFO")
