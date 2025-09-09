@@ -1,9 +1,8 @@
-from typing import List, Dict, Any, Union
-from decimal import Decimal
+from typing import List
 
 from utils.logging import get_logger
-from utils.data_utils import sort_stock_data, validate_data_quality, to_dynamodb_items
-from src.models.domain_models import MinuteData, DailyData, StockData
+from utils.data_utils import sort_stock_data
+from src.models.domain_models import MinuteData, DailyData
 
 logger = get_logger(__name__)
 
@@ -50,12 +49,3 @@ class StockDataTransformer:
             item.sma_30 = sum(sma_30_values) / len(sma_30_values)
         
         logger.info("SMA 계산 완료")
-    
-    # DynamoDB 변환과 데이터 검증은 공통 함수 사용
-    def to_dynamodb_items(self, data: List[Union[MinuteData, DailyData]]) -> List[Dict[str, Any]]:
-        """DynamoDB 저장용 아이템 변환 - 공통 함수 활용"""
-        return to_dynamodb_items(data)
-    
-    def validate_data_quality(self, data: List[Union[MinuteData, DailyData]]) -> bool:
-        """데이터 품질 검증 - 공통 함수 활용"""
-        return validate_data_quality(data)

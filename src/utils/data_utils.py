@@ -31,12 +31,12 @@ def sort_stock_data(data: List[Union[MinuteData, DailyData]], reverse: bool = Fa
     # 첫 번째 데이터 타입 확인
     first_item = data[0]
     
-    if isinstance(first_item, MinuteData):
+    # MinuteData인지 확인 (timestamp 속성 존재)
+    if hasattr(first_item, 'timestamp') and hasattr(first_item, 'sma_5'):
         return sorted(data, key=lambda x: x.timestamp, reverse=reverse)
-    elif isinstance(first_item, DailyData):
+    # DailyData인지 확인 (date 속성 존재)
+    elif hasattr(first_item, 'date') and not hasattr(first_item, 'sma_5'):
         return sorted(data, key=lambda x: x.date, reverse=reverse)
-    else:
-        raise ValueError(f"지원하지 않는 데이터 타입: {type(first_item)}")
 
 
 def validate_stock_data(data: StockData) -> bool:
