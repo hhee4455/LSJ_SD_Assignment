@@ -2,7 +2,7 @@ from decimal import Decimal
 from typing import List
 from pydantic import BaseModel
 from src.models.domain_models import MinuteData, DailyData
-from config.settings import settings
+from src.config.settings import settings
 from src.utils.date_utils import format_kis_date_to_iso, format_kis_datetime_to_iso
 
 

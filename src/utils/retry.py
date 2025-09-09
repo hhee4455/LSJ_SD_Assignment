@@ -2,7 +2,7 @@ import time
 import logging
 from functools import wraps
 from typing import Callable, Any, Type, Tuple
-from config.settings import settings
+from src.config.settings import settings
 
 
 def retry_with_delay(exceptions: Tuple[Type[Exception], ...] = (Exception,)) -> Callable:

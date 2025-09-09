@@ -1,7 +1,7 @@
 from typing import List
 
-from utils.logging import get_logger
-from utils.data_utils import sort_stock_data
+from src.utils.logging import get_logger
+from src.utils.data_utils import sort_stock_data
 from src.models.domain_models import MinuteData, DailyData
 
 logger = get_logger(__name__)

@@ -1,8 +1,8 @@
 from typing import List
 
-from config.settings import settings
-from utils.logging import get_logger
-from utils.data_utils import remove_duplicates
+from src.config.settings import settings
+from src.utils.logging import get_logger
+from src.utils.data_utils import remove_duplicates
 from src.models.api_models import KISMinuteResponse, KISDailyResponse
 from src.models.domain_models import MinuteData, DailyData
 from src.kis.kis_auth import KISAuthManager

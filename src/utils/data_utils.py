@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Union, Callable, TypeVar
 from decimal import Decimal
 
-from utils.logging import get_logger
+from src.utils.logging import get_logger
 from src.models.domain_models import MinuteData, DailyData, StockData
 
 logger = get_logger(__name__)

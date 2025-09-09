@@ -2,9 +2,9 @@ import requests
 from datetime import datetime, timedelta
 from typing import Optional, Dict
 
-from config.settings import settings
-from utils.logging import get_logger
-from utils.retry import retry_with_delay
+from src.config.settings import settings
+from src.utils.logging import get_logger
+from src.utils.retry import retry_with_delay
 
 logger = get_logger(__name__)
 
