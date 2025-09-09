@@ -18,19 +18,32 @@ class KISAPIClient:
 
     @retry_with_delay((requests.RequestException,))
     def _make_request(self, endpoint: str, headers: Dict[str, str], params: Dict[str, Any]) -> Dict[str, Any]:
+        """API 요청 실행 - 토큰 오류 시 재발급"""
         url = f"{self.base_url}{endpoint}"
-        response = requests.get(url, headers=headers, params=params, timeout=10)
-        response.raise_for_status()
         
-        result = response.json()
-        rt_cd = result.get("rt_cd", "")
-        
-        # rt_cd가 "0"이거나 빈 문자열이면 성공
-        if rt_cd != "0" and rt_cd != "":
-            error_msg = result.get('msg1') or result.get('msg_cd') or '알 수 없는 API 오류'
-            raise ValueError(f"API 오류: {error_msg}")
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=10)
+            response.raise_for_status()
             
-        return result
+            result = response.json()
+            rt_cd = result.get("rt_cd", "")
+            
+            # 토큰 관련 오류 체크
+            if rt_cd in ["EGW00123", "EGW00124"]:  # 토큰 만료/무효
+                logger.warning("토큰 오류 감지, 토큰 무효화 후 재시도")
+                self.auth_manager.invalidate_token()
+                raise requests.RequestException("Token expired, retrying...")
+            
+            # rt_cd가 "0"이거나 빈 문자열이면 성공
+            if rt_cd != "0" and rt_cd != "":
+                error_msg = result.get('msg1') or result.get('msg_cd') or '알 수 없는 API 오류'
+                raise ValueError(f"API 오류 [{rt_cd}]: {error_msg}")
+                
+            return result
+            
+        except requests.RequestException as e:
+            logger.warning(f"API 요청 실패: {e}")
+            raise
 
     def call_minute_api(self, stock_code: str) -> Dict[str, Any]:
         endpoint = "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice"
