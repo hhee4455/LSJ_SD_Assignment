@@ -1,0 +1,81 @@
+from typing import List
+
+from config.settings import settings
+from utils.logging import get_logger
+from src.models.api_models import KISMinuteResponse, KISDailyResponse
+from src.models.domain_models import MinuteData, DailyData
+from clients.kis_auth import KISAuthManager
+from clients.kis_client import KISAPIClient
+
+logger = get_logger(__name__)
+
+
+class StockDataExtractor:
+    """삼성전자 주식 데이터 추출"""
+    
+    def __init__(self):
+        self.auth_manager = KISAuthManager()
+        self.api_client = KISAPIClient(self.auth_manager)
+    
+    def extract_minute_data(self) -> List[MinuteData]:
+        """분봉 데이터 가져오기"""
+        try:
+            logger.info("분봉 데이터 추출 시작")
+            
+            # KIS API 호출
+            raw_data = self.api_client.call_minute_api(settings.STOCK_CODE)
+            
+            # 데이터 변환
+            response = KISMinuteResponse(**raw_data)
+            minute_data_list = response.to_minute_data_list(settings.STOCK_CODE)
+            
+            if not minute_data_list:
+                return []
+            
+            # 중복 제거
+            unique_data = self._remove_duplicates(minute_data_list, lambda x: x.timestamp)
+            
+            logger.info(f"분봉 {len(unique_data)}건 추출 완료")
+            return unique_data
+            
+        except Exception as e:
+            logger.error(f"분봉 추출 실패: {e}")
+            raise
+    
+    def extract_daily_data(self, start_date: str = "", end_date: str = "") -> List[DailyData]:
+        """일봉 데이터 가져오기"""
+        try:
+            logger.info("일봉 데이터 추출 시작")
+            
+            # KIS API 호출
+            raw_data = self.api_client.call_daily_api(settings.STOCK_CODE, start_date=start_date, end_date=end_date)
+            
+            # 데이터 변환
+            response = KISDailyResponse(**raw_data)
+            daily_data_list = response.to_daily_data_list(settings.STOCK_CODE)
+            
+            if not daily_data_list:
+                return []
+            
+            # 중복 제거
+            unique_data = self._remove_duplicates(daily_data_list, lambda x: x.date)
+            
+            logger.info(f"일봉 {len(unique_data)}건 추출 완료")
+            return unique_data
+            
+        except Exception as e:
+            logger.error(f"일봉 추출 실패: {e}")
+            raise
+    
+    def _remove_duplicates(self, data_list: List, key_func) -> List:
+        """중복 데이터 제거"""
+        seen = set()
+        unique_data = []
+        
+        for item in data_list:
+            key = key_func(item)
+            if key not in seen:
+                seen.add(key)
+                unique_data.append(item)
+        
+        return unique_data
