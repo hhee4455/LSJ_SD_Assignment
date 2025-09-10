@@ -47,7 +47,7 @@ pip install -r requirements.txt
 
 ---
 
-## 프로젝트 구조 설명(임시)
+## 프로젝트 구조 설명
 - `config`: 설정 관련 코드
 - `kis`: 한국투자증권 OpenAPI 클라이언트 및 인증 관리
 - `models`: API 및 도메인 모델 정의
@@ -61,3 +61,7 @@ pip install -r requirements.txt
 ### 1. 프로젝트 구조 설계
 - 모듈화를 진행하며 가독성 높은 구조가 무엇일까?
 - `clients`, `models`, `pipelines`, `utils`로 역할에 따라 폴더를 나누어 관리
+
+### 2. SMA 계산 복잡도 개선
+- 최초에는 O(n^2)의 복잡도 였지만 슬라이딩 윈도우 기법을 적용하여 O(n)으로 개선
+
