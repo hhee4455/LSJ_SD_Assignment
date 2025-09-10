@@ -3,7 +3,7 @@ from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime
 import logging
 
-from main import run_pipeline
+from main import run_minute_pipeline, run_daily_pipeline
 from src.config.settings import settings
 from src.utils.logging import get_logger
 from src.utils.date_utils import get_market_status
@@ -20,7 +20,7 @@ def minute_job():
         original_level = logging.getLogger().level
         logging.getLogger().setLevel(logging.ERROR)
         
-        success = run_pipeline()
+        success = run_minute_pipeline()
         
         # 로그 레벨 복원
         logging.getLogger().setLevel(original_level)
@@ -43,7 +43,7 @@ def daily_job():
         original_level = logging.getLogger().level
         logging.getLogger().setLevel(logging.ERROR)
         
-        success = run_pipeline()
+        success = run_daily_pipeline()
         
         # 로그 레벨 복원
         logging.getLogger().setLevel(original_level)
