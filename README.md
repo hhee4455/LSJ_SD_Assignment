@@ -22,9 +22,13 @@ pip install -r requirements.txt
 ├── .env
 ├── .env.example
 ├── .gitignore
+├── data
+│   ├── kis_token_cache.json
+│   └── kis_token.lock
 ├── main.py
 ├── README.md
 ├── requirements.txt
+├── scheduler.py
 └── src
     ├── config
     │   └── settings.py
@@ -65,6 +69,35 @@ pip install -r requirements.txt
 ### 2. SMA 계산 복잡도 개선
 - 최초에는 O(n^2)의 복잡도 였지만 슬라이딩 윈도우 기법을 적용하여 O(n)으로 개선
 
-### 4. DynamoDB 테이블 설계
+### 3. DynamoDB 테이블 설계
 - 1개의 테이블에 분봉과 일봉 데이터를 모두 저장하는 방식으로 설계
 - 하루에 390건의 분봉 데이터와 1건의 일봉 데이터는 한 테이블이 좋다고 판단
+
+### 4. 토큰 관리 및 동시성 제어
+- 멀티 프로세스 환경에서 토큰 충돌 방지를 위한 파일 락(fcntl) 구현
+- 토큰 만료 5분 전 미리 갱신하여 API 호출 실패 방지
+
+---
+
+## 예외 처리
+
+### 1. 장 마감 시간, 휴장일 예외 처리
+- 스케줄러에서 거래시간과 거래일 자동 체크
+- 현재 시장 상태 메시지 표시 (장중, 장 마감, 휴장일 등)
+
+### 2. API 호출 실패 시 재시도 로직
+- `@retry_with_delay` 데코레이터로 자동 재시도 (기본 3회)
+- KIS API 및 DynamoDB 연결 실패 시 재시도
+
+### 3. 데이터 검증 및 변환 오류
+- 잘못된 데이터 형식 필터링
+- 중복 데이터 자동 제거
+- 금융 데이터 정확성을 위한 Decimal 타입 사용
+
+### 4. DynamoDB 연결 및 저장 오류
+- `ClientError` 예외 처리
+- 테이블 존재 여부 확인
+
+### 5. 토큰 관리 오류
+- 토큰 만료, 오류 시 자동 갱신
+- 파일 락을 통한 동시성 문제 방지
