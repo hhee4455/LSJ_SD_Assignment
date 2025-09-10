@@ -37,7 +37,7 @@ class KISDailyItem(BaseModel):
     stck_oprc: str       # 시가
     stck_hgpr: str       # 고가
     stck_lwpr: str       # 저가
-    stck_prpr: str       # 종가
+    stck_clpr: str       # 종가
     acml_vol: str        # 거래량
 
     def to_daily_data(self, stock_code: str = settings.STOCK_CODE) -> DailyData:
@@ -51,7 +51,7 @@ class KISDailyItem(BaseModel):
             open_price=Decimal(self.stck_oprc),
             high_price=Decimal(self.stck_hgpr),
             low_price=Decimal(self.stck_lwpr),
-            close_price=Decimal(self.stck_prpr),
+            close_price=Decimal(self.stck_clpr),
             volume=int(self.acml_vol)
         )
 
@@ -71,8 +71,8 @@ class KISDailyResponse(BaseModel):
     """KIS 일봉 API 응답"""
     rt_cd: str
     msg1: str
-    output: List[KISDailyItem] = []
+    output2: List[KISDailyItem] = []
 
     def to_daily_data_list(self, stock_code: str = settings.STOCK_CODE) -> List[DailyData]:
         """일봉 데이터 리스트로 변환"""
-        return [item.to_daily_data(stock_code) for item in self.output]
+        return [item.to_daily_data(stock_code) for item in self.output2]
