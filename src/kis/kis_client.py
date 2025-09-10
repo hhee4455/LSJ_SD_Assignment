@@ -49,10 +49,11 @@ class KISAPIClient:
         endpoint = "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice"
         headers = self.auth_manager.get_auth_headers(tr_id="FHKST03010200")
         params = {
-            "fid_cond_mrkt_div_code": "J",
-            "fid_input_iscd": stock_code,
-            "fid_period_div_code": "1",
-            "fid_org_adj_prc": "0",
+            "FID_COND_MRKT_DIV_CODE": "J",
+            "FID_INPUT_ISCD": stock_code,
+            "FID_INPUT_HOUR_1": "",
+            "FID_PW_DATA_INCU_YN": "Y",
+            "FID_ETC_CLS_CODE": "",
         }
         logger.info(f"분봉 API 호출: {stock_code}")
         return self._make_request(endpoint, headers, params)
