@@ -21,8 +21,11 @@ class StockDataTransformer:
         sorted_data = sort_stock_data(minute_data, reverse=False)
         self._calculate_sma(sorted_data)
         
-        logger.info(f"분봉 데이터 변환 완료: {len(sorted_data)}건")
-        return sorted_data
+        # SMA 계산 완료 후 최신 1분만 반환
+        latest_data = [sorted_data[-1]] if sorted_data else []
+        
+        logger.info(f"분봉 데이터 변환 완료: {len(sorted_data)}건 처리, {len(latest_data)}건 반환 (최신 1분)")
+        return latest_data
     
     def transform_daily_data(self, daily_data: List[DailyData]) -> List[DailyData]:
         """일봉 데이터 변환"""
