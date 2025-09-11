@@ -58,6 +58,9 @@ pip install -r requirements.txt
 - `pipelines`: ETL 파이프라인 구성 요소 (추출, 변환, 적재)
 - `utils`: 유틸리티 함수 및 헬퍼 모듈
 
+- `main.py`: 전체 파이프라인 실행 스크립트
+- `scheduler.py`: 스케줄러 설정 및 실행
+
 ---
 
 ## 고민했던 것들
@@ -74,7 +77,7 @@ pip install -r requirements.txt
 - 하루에 390건의 분봉 데이터와 1건의 일봉 데이터는 한 테이블이 좋다고 판단
 
 ### 4. 토큰 관리 및 동시성 제어
-- 멀티 프로세스 환경에서 토큰 충돌 방지를 위한 파일 락(fcntl) 구현
+- 토큰 충돌 방지를 위한 파일 락(fcntl) 구현
 - 토큰 만료 5분 전 미리 갱신하여 API 호출 실패 방지
 
 ---
@@ -101,3 +104,79 @@ pip install -r requirements.txt
 ### 5. 토큰 관리 오류
 - 토큰 만료, 오류 시 자동 갱신
 - 파일 락을 통한 동시성 문제 방지
+
+---
+
+## 테이블 구성
+
+### DynamoDB 테이블 스키마
+
+| 컬럼명        | 타입      | 설명                        |
+|--------------|----------|-----------------------------|
+| PK           | 문자열   | 파티션 키 (종목+타입)        |
+| SK           | 문자열   | 정렬 키 (분봉: timestamp, 일봉: date) |
+| stock_code   | 문자열   | 종목 코드                   |
+| open_price   | 숫자(Decimal) | 시가                    |
+| high_price   | 숫자(Decimal) | 고가                    |
+| low_price    | 숫자(Decimal) | 저가                    |
+| close_price  | 숫자(Decimal) | 종가                    |
+| volume       | 숫자     | 거래량                      |
+| sma_5        | 숫자(Decimal) | 5분 이동평균(분봉만)      |
+| sma_30       | 숫자(Decimal) | 30분 이동평균(분봉만)     |
+| date         | 문자열   | 일자(YYYY-MM-DD, 일봉만)    |
+| timestamp    | 문자열   | 시각(YYYY-MM-DD HH:MM:SS, 분봉만) |
+| created_at   | 문자열   | 데이터 생성 시각             |
+
+### 키 구조
+- **PK**: `STOCK#005930#MINUTE` 또는 `STOCK#005930#DAILY` 형태
+- **SK**: 분봉은 timestamp, 일봉은 date 사용
+
+---
+
+## 실행 
+
+``` 
+# 1번만 실행
+python main.py
+
+# 스케줄러 실행
+python scheduler.py
+```
+
+---
+
+## 실행 결과
+
+### 콘솔 출력 예시
+```
+2025-09-11 11:06:00 - src.pipelines.extractor - INFO - 분봉 데이터 추출 시작
+2025-09-11 11:06:00 - src.kis.kis_client - INFO - 분봉 API 호출: 005930
+2025-09-11 11:06:00 - src.utils.data_utils - INFO - 중복 제거: 30 -> 30건
+2025-09-11 11:06:00 - src.pipelines.extractor - INFO - 분봉 30건 추출 완료
+2025-09-11 11:06:00 - main - INFO - 분봉 데이터 추출: 30건
+2025-09-11 11:06:00 - src.pipelines.transformer - INFO - 분봉 데이터 변환 시작
+2025-09-11 11:06:00 - src.pipelines.transformer - INFO - SMA 계산 시작: 30건
+2025-09-11 11:06:00 - src.pipelines.transformer - INFO - SMA 계산 완료
+2025-09-11 11:06:00 - src.pipelines.transformer - INFO - 분봉 데이터 변환 완료: 30건 처리, 1건 반환 (최신 1분)
+2025-09-11 11:06:00 - src.pipelines.loader - INFO - 분봉 데이터 저장 요청: 1건
+2025-09-11 11:06:00 - src.utils.data_utils - INFO - 중복 제거: 1 -> 1건
+2025-09-11 11:06:00 - src.pipelines.loader - INFO - 데이터 정제 완료: 1 -> 1건
+2025-09-11 11:06:00 - src.utils.data_utils - INFO - DynamoDB 아이템 변환 시작: 1건
+2025-09-11 11:06:00 - src.utils.data_utils - INFO - DynamoDB 아이템 변환 완료: 1건
+2025-09-11 11:06:00 - src.pipelines.loader - INFO - 배치 1/1 저장 중 (1건)
+2025-09-11 11:06:00 - src.pipelines.loader - INFO - 전체 배치 저장 완료: 1건
+2025-09-11 11:06:00 - main - INFO - 분봉 데이터 저장: 1건 (5분SMA, 30분SMA 포함)
+2025-09-11 11:06:00 - main - INFO - 분봉 파이프라인 실행 완료!
+2025-09-11 11:06:00 - main - INFO - 분봉 데이터 파이프라인 종료
+2025-09-11 11:06:00 - __main__ - INFO - [11:06] 1분봉 수집 완료
+```
+
+### CSV 출력 샘플 
+```csv
+PK,SK,close_price,high_price,low_price,open_price,volume,sma_5,sma_30,timestamp
+STOCK#005930#MINUTE,2025-09-11 10:53:00,72200,72300,72200,72250,70,72290,72483.33,2025-09-11 10:53:00
+STOCK#005930#MINUTE,2025-09-11 10:54:00,72250,72300,72200,72250,30750,72270,72476.67,2025-09-11 10:54:00
+STOCK#005930#DAILY,2025-09-10,72600,72800,71600,71800,21566429,,,2025-09-10 09:00:00
+```
+
+실행 결과는 루트 디렉토리의 `selected.csv` 파일에서 확인할 수 있습니다.
