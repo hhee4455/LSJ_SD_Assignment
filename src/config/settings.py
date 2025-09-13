@@ -20,7 +20,6 @@ class Settings(BaseSettings):
     
     # 로깅 설정
     LOG_LEVEL: str = Field(default="INFO")
-    LOG_FILE_PATH: str = Field(default="logs/pipeline.log")
     
     # 스케줄러 설정
     MINUTE_JOB_HOUR_START: int = Field(default=9)
