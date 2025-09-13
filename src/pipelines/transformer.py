@@ -1,4 +1,6 @@
 from typing import List
+from collections import deque
+from decimal import Decimal
 
 from src.utils.logging import get_logger
 from src.utils.data_utils import sort_stock_data
@@ -10,6 +12,12 @@ logger = get_logger(__name__)
 class StockDataTransformer:
     """주식 데이터 변환 및 정제"""
     
+    def __init__(self):
+        # 슬라이딩 윈도우 (최근 30개 가격만 저장)
+        self.price_window = deque(maxlen=30)
+        self.window_sum = Decimal('0')
+        self.initialized = False  # 초기화 상태 추적
+    
     def transform_minute_data(self, minute_data: List[MinuteData]) -> List[MinuteData]:
         """분봉 데이터 변환 - SMA 계산 포함"""
         logger.info("분봉 데이터 변환 시작")
@@ -19,13 +27,43 @@ class StockDataTransformer:
         
         # 시간순 정렬 및 SMA 계산
         sorted_data = sort_stock_data(minute_data, reverse=False)
-        self._calculate_sma(sorted_data)
         
-        # SMA 계산 완료 후 최신 1분만 반환
-        latest_data = [sorted_data[-1]] if sorted_data else []
+        if not self.initialized:
+            # 전체 데이터로 윈도우 초기화
+            for data in sorted_data:
+                self._update_sma_efficiently(data)
+            self.initialized = True
+            
+            # 최신 데이터 반환 (SMA 포함)
+            return [sorted_data[-1]] if sorted_data else []
+        else:
+            # 이후 호출: 최신 1개만 처리
+            if sorted_data:
+                latest_data = sorted_data[-1]
+                self._update_sma_efficiently(latest_data)
+                return [latest_data]
+            return []
+    
+    def _update_sma_efficiently(self, data: MinuteData) -> MinuteData:
+        """SMA 계산 로직"""
+        new_price = data.close_price
         
-        logger.info(f"분봉 데이터 변환 완료: {len(sorted_data)}건 처리, {len(latest_data)}건 반환 (최신 1분)")
-        return latest_data
+        # 윈도우가 가득 찬 경우 가장 오래된 값 제거
+        if len(self.price_window) == 30:
+            self.window_sum -= self.price_window[0]
+        
+        # 새 값 추가
+        self.price_window.append(new_price)
+        self.window_sum += new_price
+        
+        # SMA 계산 
+        window_len = len(self.price_window)
+        if window_len >= 5:
+            data.sma_5 = sum(list(self.price_window)[-5:]) / 5
+        if window_len >= 30:
+            data.sma_30 = self.window_sum / 30
+        
+        return data
     
     def transform_daily_data(self, daily_data: List[DailyData]) -> List[DailyData]:
         """일봉 데이터 변환"""
@@ -39,47 +77,3 @@ class StockDataTransformer:
         
         logger.info(f"일봉 데이터 변환 완료: {len(sorted_data)}건")
         return sorted_data
-    
-    def _calculate_sma(self, data: List[MinuteData]) -> None:
-        """SMA(Simple Moving Average) 계산"""
-        if not data:
-            return
-        
-        data_len = len(data)
-        logger.info(f"SMA 계산 시작: {data_len}건")
-        
-        # 5분 SMA 계산
-        self._calculate_sma_window(data, window_size=5, attr_name='sma_5')
-        
-        # 30분 SMA 계산  
-        self._calculate_sma_window(data, window_size=30, attr_name='sma_30')
-        
-        logger.info("SMA 계산 완료")
-    
-    def _calculate_sma_window(self, data: List[MinuteData], window_size: int, attr_name: str) -> None:
-        """SMA 계산"""
-        data_len = len(data)
-        
-        if data_len < window_size:
-            # 데이터가 윈도우 크기보다 작으면 누적 평균 계산
-            for i in range(data_len):
-                current_window = data[:i + 1]
-                avg_price = sum(item.close_price for item in current_window) / len(current_window)
-                setattr(data[i], attr_name, avg_price)
-            return
-        
-        # 첫 번째 윈도우의 합계 계산
-        window_sum = sum(data[j].close_price for j in range(window_size))
-        setattr(data[window_size - 1], attr_name, window_sum / window_size)
-        
-        # 슬라이딩 윈도우로 나머지 계산 (O(n) 복잡도)
-        for i in range(window_size, data_len):
-            # 이전 값 제거, 새 값 추가
-            window_sum = window_sum - data[i - window_size].close_price + data[i].close_price
-            setattr(data[i], attr_name, window_sum / window_size)
-        
-        # 초기 데이터들의 SMA (윈도우 크기보다 작은 구간)
-        for i in range(window_size - 1):
-            current_window = data[:i + 1]
-            avg_price = sum(item.close_price for item in current_window) / len(current_window)
-            setattr(data[i], attr_name, avg_price)
