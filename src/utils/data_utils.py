@@ -1,5 +1,4 @@
 from typing import List, Dict, Any, Union, Callable, TypeVar
-from decimal import Decimal
 
 from src.utils.logging import get_logger
 from src.models.domain_models import MinuteData, DailyData, StockData
@@ -64,15 +63,6 @@ def validate_stock_data(data: StockData) -> bool:
         return False
 
 
-def convert_decimal_to_string(item: Dict[str, Any], decimal_keys: List[str]) -> Dict[str, Any]:
-    """Decimal 필드들을 문자열로 변환 - DynamoDB 호환성"""
-    result = item.copy()
-    for key in decimal_keys:
-        if key in result and isinstance(result[key], Decimal):
-            result[key] = str(result[key])
-    return result
-
-
 def to_dynamodb_item(data: Union[MinuteData, DailyData]) -> Dict[str, Any]:
     """개별 데이터를 DynamoDB 아이템으로 변환"""
     # models 활용: PK/SK 생성
@@ -82,16 +72,8 @@ def to_dynamodb_item(data: Union[MinuteData, DailyData]) -> Dict[str, Any]:
         **data.model_dump(exclude={'created_at'}),
         "created_at": data.created_at
     }
-    
-    # Decimal을 문자열로 변환 (DynamoDB 호환성)
-    price_keys = ['open_price', 'high_price', 'low_price', 'close_price']
-    item = convert_decimal_to_string(item, price_keys)
-    
-    # 분봉 데이터의 SMA 값도 변환
-    if isinstance(data, MinuteData):
-        sma_keys = ['sma_5', 'sma_30']
-        item = convert_decimal_to_string(item, sma_keys)
-    
+    # boto3는 Decimal을 그대로 숫자 타입으로 저장 가능하므로 변환하지 않음
+
     # None 값 제거
     return {k: v for k, v in item.items() if v is not None}
 

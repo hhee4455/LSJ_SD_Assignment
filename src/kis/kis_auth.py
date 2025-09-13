@@ -1,6 +1,5 @@
 import requests
 import json
-import os
 import fcntl
 from datetime import datetime, timedelta
 from typing import Optional, Dict
@@ -185,14 +184,6 @@ class KISAuthManager:
         except Exception as e:
             logger.warning(f"토큰 캐시 파일 삭제 실패: {e}")
 
-    def is_token_valid(self) -> bool:
-        """현재 토큰 유효성 체크 (외부 인터페이스)"""
-        try:
-            token = self.get_access_token()
-            return bool(token)
-        except Exception:
-            return False
-
     def get_auth_headers(self, tr_id: Optional[str] = None) -> Dict[str, str]:
         """인증 헤더 생성"""
         try:
@@ -209,16 +200,4 @@ class KISAuthManager:
             logger.error(f"인증 헤더 생성 실패: {e}")
             raise
 
-    def cleanup_cache(self):
-        """캐시 파일 정리 (필요시 사용)"""
-        try:
-            if self.token_cache_path.exists():
-                self.token_cache_path.unlink()
-                logger.info("토큰 캐시 파일 정리 완료")
-            
-            if self.lock_file_path.exists():
-                self.lock_file_path.unlink()
-                logger.debug("락 파일 정리 완료")
-                
-        except Exception as e:
-            logger.warning(f"캐시 정리 실패: {e}")
+    # cleanup_cache 메서드는 사용처가 없어 제거했습니다.
