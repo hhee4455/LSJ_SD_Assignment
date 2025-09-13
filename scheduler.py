@@ -74,7 +74,7 @@ def main():
         CronTrigger(
             day_of_week='mon-fri',
             hour=f"{settings.MINUTE_JOB_HOUR_START}-{settings.MINUTE_JOB_HOUR_END}",
-            minute='0-30',
+            minute='*',
             second=0
         ),
         id='minute_collection',
