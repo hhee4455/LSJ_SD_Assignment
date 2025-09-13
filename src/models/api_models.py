@@ -1,6 +1,6 @@
 from decimal import Decimal
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from src.models.domain_models import MinuteData, DailyData
 from src.config.settings import settings
 from src.utils.date_utils import format_kis_date_to_iso, format_kis_datetime_to_iso
@@ -60,7 +60,7 @@ class KISMinuteResponse(BaseModel):
     """KIS 분봉 API 응답"""
     rt_cd: str
     msg1: str
-    output2: List[KISMinuteItem] = []
+    output2: List[KISMinuteItem] = Field(default_factory=list)
 
     def to_minute_data_list(self, stock_code: str = settings.STOCK_CODE) -> List[MinuteData]:
         """분봉 데이터 리스트로 변환"""
@@ -71,7 +71,7 @@ class KISDailyResponse(BaseModel):
     """KIS 일봉 API 응답"""
     rt_cd: str
     msg1: str
-    output2: List[KISDailyItem] = []
+    output2: List[KISDailyItem] = Field(default_factory=list)
 
     def to_daily_data_list(self, stock_code: str = settings.STOCK_CODE) -> List[DailyData]:
         """일봉 데이터 리스트로 변환"""
